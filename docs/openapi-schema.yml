@@ -3,7 +3,54 @@ info:
   title: 'Foodgram'
   version: ''
 paths:
-  /api/auth/users/:
+  /api/users/:
+    get:
+      operationId: Список пользователей
+      description: ''
+      parameters:
+        - name: page
+          required: false
+          in: query
+          description: Номер страницы.
+          schema:
+            type: integer
+        - name: limit
+          required: false
+          in: query
+          description: Количество объектов на странице.
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                    description: 'Общее количество объектов в базе'
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://foodgram.example.org/api/users/?page=4
+                    description: 'Ссылка на следующую страницу'
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://foodgram.example.org/api/users/?page=2
+                    description: 'Ссылка на предыдущую страницу'
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                    description: 'Список объектов текущей страницы'
+          description: ''
+      tags:
+        - Пользователи
     post:
       operationId: Регистрация пользователя
       description: ''
@@ -18,12 +65,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CustomUserCreate'
+                $ref: '#/components/schemas/CustomUserResponseOnCreate'
           description: 'Пользователь успешно создан'
         '400':
           $ref: '#/components/responses/ValidationError'
       tags:
-      - Пользователи
+        - Пользователи
   /api/tags/:
     get:
       operationId: Cписок тегов
@@ -378,54 +425,6 @@ paths:
           $ref: '#/components/responses/AuthenticationError'
       tags:
       - Список покупок
-  /api/users/:
-    get:
-      operationId: Список пользователей
-      description: ''
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: Номер страницы.
-        schema:
-          type: integer
-      - name: limit
-        required: false
-        in: query
-        description: Количество объектов на странице.
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                    example: 123
-                    description: 'Общее количество объектов в базе'
-                  next:
-                    type: string
-                    nullable: true
-                    format: uri
-                    example: http://foodgram.example.org/api/users/?page=4
-                    description: 'Ссылка на следующую страницу'
-                  previous:
-                    type: string
-                    nullable: true
-                    format: uri
-                    example: http://foodgram.example.org/api/users/?page=2
-                    description: 'Ссылка на предыдущую страницу'
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/User'
-                    description: 'Список объектов текущей страницы'
-          description: ''
-      tags:
-      - Пользователи
   /api/users/{id}/:
     get:
       operationId: Профиль пользователя
@@ -935,12 +934,50 @@ components:
           maxLength: 150
           description: "Фамилия"
           example: "Пупкин"
+        password:
+          type: string
+          maxLength: 150
+          description: "Пароль"
+          example: "Qwerty123"
       required:
       - username
       - password
       - first_name
       - last_name
       - email
+    CustomUserResponseOnCreate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: "Адрес электронной почты"
+          example: "vpupkin@yandex.ru"
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: "Уникальный юзернейм"
+          pattern: ^[\w.@+-]+\z
+          maxLength: 150
+          example: "vasya.pupkin"
+        first_name:
+          type: string
+          maxLength: 150
+          description: "Имя"
+          example: "Вася"
+        last_name:
+          type: string
+          maxLength: 150
+          description: "Фамилия"
+          example: "Пупкин"
+      required:
+        - username
+        - first_name
+        - last_name
+        - email
     Activation:
       type: object
       properties:
