@@ -21,12 +21,10 @@ jobs:
     - name: Test with flake8 and django tests
       run: |
         python -m flake8
-        pytest
   
   build_and_push_to_docker_hub:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-    needs: tests
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Check out the repo
@@ -56,9 +54,10 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-          stack_file_name: docker-compose.yaml
+          stack_file_name: docker-compose.yml
           script: |
-            sudo docker pull fslowpoke/yamdb:latest
+            sudo docker pull fslowpoke/foodgram_web:latest
+            sudo docker pull fslowpoke/foodgram_frontend:latest
             sudo docker-compose stop
             sudo docker-compose rm web
             touch .env 
@@ -70,6 +69,7 @@ jobs:
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             echo DOMAIN_NAME=${{ secrets.DOMAIN_NAME }} >> .env
             sudo docker-compose up -d
+  
   send_message:
     runs-on: ubuntu-latest
     needs: deploy
