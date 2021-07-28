@@ -1,5 +1,5 @@
-from django.db import models
 from django.core.validators import MinValueValidator
+from django.db import models
 
 from users.models import CustomUser
 
@@ -25,7 +25,7 @@ class Tag(models.Model):
         verbose_name_plural = 'теги'
 
     def __str__(self):
-        return self.title
+        return self.name
 
 
 class Ingredient(models.Model):
@@ -46,7 +46,7 @@ class Ingredient(models.Model):
         verbose_name_plural = 'ингредиенты'
 
     def __str__(self):
-        return f'{self.name}, {self.dimension}'
+        return f'{self.name}, {self.measurement_unit}'
 
 
 class Recipe(models.Model):
@@ -54,7 +54,7 @@ class Recipe(models.Model):
         CustomUser,
         verbose_name='Автор',
         on_delete=models.CASCADE,
-        related_name='recipes'
+        related_name='recipes',
     )
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -72,12 +72,12 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         verbose_name='Название',
-        max_length=200
+        max_length=200,
     )
     text = models.TextField(
         verbose_name='Описание',
     )
-    coocking_time = models.PositiveIntegerField(
+    cooking_time = models.PositiveIntegerField(
         verbose_name='Время приготовления',
         validators=[MinValueValidator(1)],
     )
@@ -92,7 +92,7 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return self.title
+        return self.name
 
 
 class IngredientInRecipe(models.Model):
@@ -104,7 +104,7 @@ class IngredientInRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredients_amount'
+        related_name='ingredients_amount',
     )
     amount = models.PositiveIntegerField(
         verbose_name='Количество ингредиента',
@@ -119,13 +119,16 @@ class Favorites(models.Model):
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name="favorite_subscriber")
+        related_name="favorite_subscriber",
+    )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name="favorite_recipe")
-    when_added = models.DateTimeField(
-        auto_now_add=True, verbose_name='Дата добавления'
+        related_name="favorite_recipe",
+    )
+    date_added = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата добавления',
     )
 
     class Meta:
@@ -137,12 +140,16 @@ class Follow(models.Model):
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='follower'
+        related_name='follower',
     )
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='following'
+        related_name='following',
+    )
+    subscription_date = models.DateField(
+        auto_now_add=True,
+        verbose_name='Дата подписки',
     )
 
     class Meta:
@@ -152,3 +159,25 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.user} follow to {self.author}'
+
+
+class Purchase(models.Model):
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='purchases',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='customers',
+    )
+    date_added = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата добавления',
+    )
+
+    class Meta:
+        ordering = ('-date_added',)
+        verbose_name = 'Покупка'
+        verbose_name_plural = 'Покупки'

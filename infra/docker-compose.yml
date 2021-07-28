@@ -1,13 +1,22 @@
 version: '3.3'
 services:
+  db:
+    image: postgres:12.4
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: "db"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
   web:
-      build:
-        context: ../backend/foodgram/
-        dockerfile: Dockerfile
-      restart: always
-      volumes:
-        - static_value:/app/static/
-        - media_value:/app/media/
+    build:
+      context: ../backend/foodgram/
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media/
+    depends_on:
+      - db
   frontend:
     build:
       context: ../frontend
@@ -27,4 +36,5 @@ services:
 
 volumes:
   static_value:  
-  media_value: 
+  media_value:
+  postgres_data: 
