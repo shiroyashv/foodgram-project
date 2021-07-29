@@ -4,23 +4,20 @@ services:
     image: postgres:12.4
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    environment:
-      POSTGRES_DB: "db"
-      POSTGRES_HOST_AUTH_METHOD: "trust"
+    env_file:
+      - ./.env
   web:
-    build:
-      context: ../backend/foodgram/
-      dockerfile: Dockerfile
+    image: fslowpoke/foodgram_web:latest
     restart: always
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
     depends_on:
       - db
+    env_file:
+      - ./.env
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: fslowpoke/foodgram_fronend:latest
     volumes:
       - ../frontend/:/app/result_build/
   nginx:
