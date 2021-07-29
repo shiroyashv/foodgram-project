@@ -17,7 +17,7 @@ services:
     env_file:
       - ./.env
   frontend:
-    image: fslowpoke/foodgram_fronend
+    image: fslowpoke/foodgram_frontend
     volumes:
       - result_build:/build
     depends_on:
