@@ -21,7 +21,7 @@ services:
   frontend:
     image: fslowpoke/foodgram_frontend:v2.0
     volumes:
-      - result_build:/app/build/
+      - result_build:/app/result_build/build
     depends_on:
       - db
 
