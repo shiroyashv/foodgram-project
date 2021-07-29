@@ -19,19 +19,26 @@ services:
   frontend:
     image: fslowpoke/foodgram_fronend:latest
     volumes:
-      - ../frontend/:/app/result_build/
+      - result_build:/build
+    depends_on:
+      - db
+
   nginx:
     image: nginx:1.19.3
     ports:
       - 80:80
     volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - static_value:/static/
       - media_value:/media/
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs:/usr/share/nginx/html/api/docs
+      - result_build:/usr/share/nginx/html/
+      - ./docs:/usr/share/nginx/html/api/docs
+    depends_on: 
+      - web
+      - frontend
 
 volumes:
   static_value:  
   media_value:
+  result_build:
   postgres_data: 
