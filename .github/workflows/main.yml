@@ -64,7 +64,7 @@ jobs:
           stack_file_name: docker-compose.yml
           script: |
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_web:latest
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend
             sudo docker-compose stop
             sudo docker-compose rm web
             touch .env 
