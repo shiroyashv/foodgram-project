@@ -7,7 +7,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Check out the repo
+      uses: actions/checkout@v2
+
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
@@ -16,9 +18,10 @@ jobs:
     - name: Install dependencies
       run: | 
         python -m pip install --upgrade pip 
-        pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort
-        pip install -r requirements.txt
-    - name: Test with flake8 and django tests
+        pip install flake8 pytest
+        pip install -r backend/requirements.txt
+
+    - name: Test with flake8
       run: |
         python -m flake8
   
@@ -29,18 +32,22 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
       - name: Login to Docker 
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Push to Docker Hub
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: fslowpoke/foodgram_web:latest
+          context: ./backend/
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_web:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,8 +63,8 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           stack_file_name: docker-compose.yml
           script: |
-            sudo docker pull fslowpoke/foodgram_web:latest
-            sudo docker pull fslowpoke/foodgram_frontend:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_web:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
             sudo docker-compose stop
             sudo docker-compose rm web
             touch .env 
