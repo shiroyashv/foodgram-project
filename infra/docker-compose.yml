@@ -6,6 +6,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
+  
   web:
     image: fslowpoke/foodgram_web:latest
     restart: always
@@ -16,10 +17,11 @@ services:
       - db
     env_file:
       - ./.env
+  
   frontend:
     image: fslowpoke/foodgram_frontend:v2.0
     volumes:
-      - result_build:/build
+      - result_build:/app/build
     depends_on:
       - db
 
