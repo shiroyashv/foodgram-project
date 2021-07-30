@@ -58,10 +58,6 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'ingredients', 'tags', 'cooking_time',
                   'is_favorited', 'is_in_shopping_cart')
 
-        def get_ingredients(self, obj):
-            ingredients = IngredientInRecipe.objects.filter(recipe=obj)
-            return IngredientInRecipeSerializer(ingredients, many=True).data
-
         def get_is_favorited(self, obj):
             recipe = get_object_or_404(Recipe, id=obj.id)
             user = self.context['request'].user
