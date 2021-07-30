@@ -1,12 +1,12 @@
 from django.http.response import HttpResponse
-from rest_framework import filters, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
-from .filters import RecipeFilter
+from .filters import RecipeFilter, IngredientNameFilter
 from .models import (CustomUser, Favorites, Follow, Ingredient,
                      IngredientInRecipe, Purchase, Recipe, Tag)
 from .permissions import IsOwnerOrAdminOrReadOnly
@@ -40,10 +40,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return CreateRecipeSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
+    def perform_create(self, serializer):
+        return serializer.save(author=self.request.user)
 
 
 class FavoritesViewSet(viewsets.ViewSet):
@@ -136,9 +134,9 @@ class FollowViewSet(viewsets.GenericViewSet):
 class IngredientsViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    filter_backends = (filters.SearchFilter,)
     search_fields = ['^name']
     pagination_class = None
+    filterset_class = IngredientNameFilter
 
 
 class PurchaseViewSet(viewsets.ViewSet):
