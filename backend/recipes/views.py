@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Permission
 from django.http.response import HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.generics import get_object_or_404
@@ -134,8 +135,8 @@ class FollowViewSet(viewsets.GenericViewSet):
 class IngredientsViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    search_fields = ['^name']
     pagination_class = None
+    permission_classes = (AllowAny,)
     filterset_class = IngredientNameFilter
 
 
