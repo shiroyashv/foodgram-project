@@ -8,7 +8,7 @@ class IngredientNameFilter(filters.FilterSet):
 
     class Meta:
         model = Ingredient
-        fields = ('name',)
+        fields = ('name', 'measurement_unit')
 
     def name_starts_with(self, queryset, slug, name):
         return queryset.filter(name__startswith=name)
