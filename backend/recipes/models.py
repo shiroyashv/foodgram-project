@@ -111,6 +111,12 @@ class IngredientInRecipe(models.Model):
 
     class Meta:
         unique_together = ('ingredient', 'recipe')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ingredient', 'recipe'],
+                name='recipe_ingredient_unique',
+            )
+        ]
 
 
 class Favorites(models.Model):
@@ -132,6 +138,14 @@ class Favorites(models.Model):
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='favorite_user_recept_unique'
+            )
+        ]
+
+    def __str__(self):
+        return f'Рецепт {self.recipe} в избранном у {self.user}'
 
 
 class Follow(models.Model):
@@ -151,12 +165,16 @@ class Follow(models.Model):
     )
 
     class Meta:
-        unique_together = ('user', 'author')
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'], name='follow_unique'
+            )
+        ]
 
     def __str__(self):
-        return f'{self.user} follow to {self.author}'
+        return f'{self.user} подписан на {self.author}'
 
 
 class Purchase(models.Model):
@@ -179,3 +197,11 @@ class Purchase(models.Model):
         ordering = ('-date_added',)
         verbose_name = 'Покупка'
         verbose_name_plural = 'Покупки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='purchase_user_recipe_unique'
+            )
+        ]
+
+    def __str__(self):
+        return f'Рецепт {self.recipe} в списке покупок {self.user}'
