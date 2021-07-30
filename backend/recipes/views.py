@@ -1,4 +1,3 @@
-from django.contrib.auth.models import Permission
 from django.http.response import HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.generics import get_object_or_404

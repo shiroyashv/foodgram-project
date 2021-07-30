@@ -82,20 +82,21 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        author = self.context.get('request').user
-        recipe = Recipe(author=author, **validated_data)
+        recipe = Recipe.objects.create(**validated_data)
 
-        recipe_ingredient_list = []
+        ingredients_set = set()
         for ingredient in ingredients:
+            id = ingredient.get('id')
             amount = ingredient.get('amount')
             if amount < 1:
                 raise serializers.ValidationError(
-                    'Количество ингредиента должно быть больше 0.'
+                    'Количество ингредиента не может быть меньше 1.'
                 )
 
-            ingredient_instance = get_object_or_404(Ingredient,
-                                                    id=ingredient.get('id'))
-            recipe_ingredient_list.append(IngredientInRecipe(
+            ingredient_instance = get_object_or_404(
+                Ingredient, id=id
+            )
+            ingredients_set.add(IngredientInRecipe(
                 recipe=recipe,
                 ingredient=ingredient_instance,
                 amount=amount
@@ -103,7 +104,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
         recipe.save()
         recipe.tags.set(tags)
-        IngredientInRecipe.objects.bulk_create(recipe_ingredient_list)
+        IngredientInRecipe.objects.bulk_create(ingredients_set)
 
         return recipe
 
@@ -111,17 +112,17 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
 
-        recipe_ingredient_list = []
+        ingredients_set = set()
         for ingredient in ingredients:
             amount = ingredient.get('amount')
             if amount < 1:
                 raise serializers.ValidationError(
-                    'Количество ингредиента должно быть больше 0.'
+                    'Количество ингредиента не может быть меньше 1.'
                 )
             ingredient_instance = get_object_or_404(
                 Ingredient, id=ingredient.get('id')
             )
-            recipe_ingredient_list.append(IngredientInRecipe(
+            ingredients_set.add(IngredientInRecipe(
                 recipe=instance,
                 ingredient=ingredient_instance,
                 amount=amount
@@ -134,7 +135,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         instance.cooking_time = validated_data.get('cooking_time')
         instance.save()
         instance.tags.set(tags)
-        IngredientInRecipe.objects.bulk_create(recipe_ingredient_list)
+        IngredientInRecipe.objects.bulk_create(ingredients_set)
 
         return instance
 
