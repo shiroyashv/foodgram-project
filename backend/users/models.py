@@ -45,13 +45,13 @@ class CustomUser(AbstractUser):
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
+
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ('email', 'first_name', 'last_name')
-
     def __str__(self):
-        return self.email
+        return self.username
 
     def get_full_name(self):
         return f"{self.first_name}  {self.last_name}"

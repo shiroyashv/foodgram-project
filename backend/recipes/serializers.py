@@ -1,12 +1,25 @@
 from django.shortcuts import get_object_or_404
+from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from users.models import CustomUser
-from users.serializers import UserSerializer
+from .models import (Favorites, Follow, Ingredient, IngredientInRecipe,
+                     Purchase, Recipe, Tag, User)
 
-from .models import (Favorites, Ingredient, IngredientInRecipe, Purchase,
-                     Recipe, Tag)
+
+class UserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed')
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request is None or request.user.is_anonymous:
+            return False
+        return Follow.objects.filter(user=request.user, author=obj).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -78,10 +91,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         image = validated_data.pop('image')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(image=image, **validated_data)
-        tags = validated_data.pop('tags')
+        tags = self.initial_data.get('tags')
 
-        for tag in tags:
-            recipe.tags.add(tag)
+        for tag_id in tags:
+            recipe.tags.add(get_object_or_404(Tag, pk=tag_id))
 
         for ingredient in ingredients:
             IngredientInRecipe.objects.create(
@@ -100,11 +113,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.text = validated_data.get('text', instance.text)
         instance.tags.clear()
         IngredientInRecipe.objects.filter(recipe=instance).all().delete()
-        tags = validated_data.pop('tags')
+        tags = self.initial_data.get('tags')
 
-        for tag in tags:
-            instance.tags.add(tag)
-        instance.save()
+        for tag_id in tags:
+            instance.tags.add(get_object_or_404(Tag, pk=tag_id))
 
         for ingredient in validated_data.get('ingredients'):
             ingredient_amount_obj = IngredientInRecipe.objects.create(
@@ -131,7 +143,7 @@ class FollowerSerializer(UserSerializer):
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = ('email', 'id', 'username', 'first_name',
                   'last_name', 'is_subscribed', 'recipes', 'recipes_count')
 
