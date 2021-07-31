@@ -116,7 +116,6 @@ REST_FRAMEWORK = {
 
 
 DJOSER = {
-    'USER_ID_FIELD': 'username',
     'LOGIN_FIELD': 'email',
     'PASSWORD_RESET_CONFIRM_URL': 'users/reset_password/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': 'users/reset_email/{uid}/{token}',
