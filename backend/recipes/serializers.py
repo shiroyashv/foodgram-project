@@ -85,32 +85,33 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                   'name', 'image', 'text', 'cooking_time')
 
     def create(self, validated_data):
-        ingredients_data = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
         ingredients_set = set()
-        for ingredient in ingredients_data:
-            if ingredient['amount'] < 0:
+        for ingredient in ingredients:
+            if ingredient.get('amount') <= 0:
                 raise serializers.ValidationError(
-                    'Количество должно быть >= 0')
-            if ingredient['id'] in ingredients_set:
+                    'Количество должно быть больше 0.')
+            if ingredient.get('id') in ingredients_set:
                 raise serializers.ValidationError(
                     'Ингредиент в рецепте не должен повторяться.')
-            ingredients_set.add(ingredient['id'])
+            ingredients_set.add(ingredient.get('id'))
         recipe = Recipe.objects.create(**validated_data)
-        for ingredient in ingredients_data:
-            amount = ingredient['amount']
-            id = ingredient['id']
-            IngredientInRecipe.objects.create(
-                ingredient=get_object_or_404(Ingredient, id=id),
-                recipe=recipe, amount=amount
+        for ingredient in ingredients:
+            ingredient_instance = get_object_or_404(
+                Ingredient, id=ingredient.get('id')
             )
-        for tag in tags_data:
+            IngredientInRecipe.objects.create(
+                ingredient=ingredient_instance,
+                recipe=recipe, amount=ingredient.get('amount')
+            )
+        for tag in tags:
             recipe.tags.add(tag)
         return recipe
 
     def update(self, instance, validated_data):
-        ingredients_data = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
         instance.image = validated_data.get('image', instance.image)
@@ -118,26 +119,34 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'cooking_time', instance.cooking_time
         )
         ingredients_set = set()
-        for ingredient in ingredients_data:
-            if ingredient['amount'] < 0:
+        for ingredient in ingredients:
+            if ingredient.get('amount') <= 0:
                 raise serializers.ValidationError(
-                    'Количество должно быть >= 0')
-            if ingredient['id'] in ingredients_set:
+                    'Количество должно быть больше 0.')
+            if ingredient.get('id') in ingredients_set:
                 raise serializers.ValidationError(
                     'Ингредиент в рецепте не должен повторяться.')
-            ingredients_set.add(ingredient['id'])
+            ingredients_set.add(ingredient.get('id'))
         IngredientInRecipe.objects.filter(recipe=instance).delete()
-        for ingredient in ingredients_data:
-            amount = ingredient['amount']
-            id = ingredient['id']
-            IngredientInRecipe.objects.create(
-                ingredient=get_object_or_404(Ingredient, id=id),
-                recipe=instance, amount=amount
+        for ingredient in ingredients:
+            ingredient_instance = get_object_or_404(
+                Ingredient, id=ingredient.get('id')
             )
-        for tag in tags_data:
+            IngredientInRecipe.objects.create(
+                ingredient=ingredient_instance,
+                recipe=instance, amount=ingredient.get('amount')
+            )
+        for tag in tags:
             instance.tags.add(tag)
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        data = RecipeSerializer(
+            instance,
+            context={'request': self.context.get('request')}
+        ).data
+        return data
 
 
 class FollowerRecipeSerializer(serializers.ModelSerializer):
