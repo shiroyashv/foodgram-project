@@ -1,5 +1,5 @@
 from django.db.models import Exists, OuterRef
-from django.http.response import HttpResponse
+# from django.http.response import HttpResponse
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -123,6 +123,31 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def add_obj(self, model, user, recipe):
+        if model.objects.filter(user=user, recipe=recipe).exists():
+            return Response(
+                'Рецепт уже добавлен в список',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        obj = model.objects.create(
+            user=user, recipe=recipe
+        )
+        obj.save()
+        serializer = FollowerRecipeSerializer(recipe)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete_obj(self, model, user, recipe):
+        obj = model.objects.filter(user=user, recipe=recipe)
+        if obj.exists():
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(
+            'Рецепт уже удален', status=status.HTTP_400_BAD_REQUEST
+        )
+
     @action(detail=True, permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
         recipe = self.get_object()
@@ -150,27 +175,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
 
         return self.delete_obj(Purchase, user, recipe)
-
-    def add_obj(self, model, user, recipe):
-        if model.objects.filter(user=user, recipe=recipe).exists():
-            return Response({
-                'errors': 'Рецепт уже добавлен в список'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        obj = model.objects.create(
-            user=user, recipe=recipe
-        )
-        obj.save()
-        serializer = FollowerRecipeSerializer(recipe)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def delete_obj(self, model, user, recipe):
-        obj = model.objects.filter(user=user, recipe=recipe)
-        if obj.exists():
-            obj.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response({
-            'errors': 'Рецепт уже удален'
-        }, status=status.HTTP_400_BAD_REQUEST)

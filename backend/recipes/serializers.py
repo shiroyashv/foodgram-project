@@ -19,7 +19,7 @@ class UserSerializer(UserSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Follow.objects.filter(user=request.user, author=obj).exists()
+        return Follow.objects.filter(user=request.user, author=obj.id).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
