@@ -24,16 +24,16 @@ class CustomUserViewSet(UserViewSet):
     @action(detail=True, permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
         user = request.user
-        subscriber = get_object_or_404(User, id=id)
+        author = get_object_or_404(User, id=id)
 
-        if (Follow.objects.filter(user=user, subscriber=subscriber)
-                .exists() or user == subscriber):
+        if (Follow.objects.filter(user=user, author=author)
+                .exists() or user == author):
             return Response({
                 'errors': ('Вы уже подписаны на этого пользователя '
                            'или подписываетесь на самого себя')
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        subscribe = Follow.objects.create(user=user, subscriber=subscriber)
+        subscribe = Follow.objects.create(user=user, author=author)
         subscribe.save()
         serializer = FollowerSerializer(
             subscribe, context={'request': request}
@@ -44,9 +44,9 @@ class CustomUserViewSet(UserViewSet):
     @subscribe.mapping.delete
     def del_subscribe(self, request, id=None):
         user = request.user
-        subscriber = get_object_or_404(User, id=id)
+        author = get_object_or_404(User, id=id)
         subscribe = Follow.objects.filter(
-            user=user, subscriber=subscriber
+            user=user, author=author
         )
         if subscribe.exists():
             subscribe.delete()
