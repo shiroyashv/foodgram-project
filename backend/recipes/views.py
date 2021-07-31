@@ -1,3 +1,4 @@
+from django.db.models import Exists, OuterRef
 from django.http.response import HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.generics import get_object_or_404
@@ -10,7 +11,7 @@ from .filters import RecipeFilter, IngredientNameFilter
 from .models import (CustomUser, Favorites, Follow, Ingredient,
                      IngredientInRecipe, Purchase, Recipe, Tag)
 from .permissions import IsOwnerOrAdminOrReadOnly
-from .serializers import (CreateRecipeSerializer, FollowerRecipeSerializer,
+from .serializers import (FollowerRecipeSerializer,
                           FollowerSerializer, IngredientSerializer,
                           RecipeSerializer, TagSerializer)
 
@@ -24,7 +25,8 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrAdminOrReadOnly)
+    serializer_class = RecipeSerializer
+    permission_classes = (IsOwnerOrAdminOrReadOnly)
     pagination_class = PageNumberPagination
     filter_class = RecipeFilter
 
@@ -35,13 +37,30 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return IsOwnerOrAdminOrReadOnly(),
         return AllowAny(),
 
-    def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return RecipeSerializer
-        return CreateRecipeSerializer
-
     def perform_create(self, serializer):
         return serializer.save(author=self.request.user)
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_anonymous:
+            return Recipe.objects.all()
+
+        queryset = Recipe.objects.annotate(
+            is_favorited=Exists(Favorites.objects.filter(
+                user=user, recipe_id=OuterRef('pk')
+            )),
+            is_in_shopping_cart=Exists(Purchase.objects.filter(
+                user=user, recipe_id=OuterRef('pk')
+            ))
+        )
+
+        if self.request.GET.get('is_favorited'):
+            return queryset.filter(is_favorited=True)
+        elif self.request.GET.get('is_in_shopping_cart'):
+            return queryset.filter(is_in_shopping_cart=True)
+
+        return queryset
 
 
 class FavoritesViewSet(viewsets.ViewSet):
