@@ -1,5 +1,5 @@
 from django.db.models import Exists, OuterRef
-# from django.http.response import HttpResponse
+from django.http.response import HttpResponse
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import IngredientNameFilter, RecipeFilter
-from .models import Favorites, Follow, Ingredient, Purchase, Recipe, Tag, User
+from .models import Favorites, Follow, Ingredient, IngredientInRecipe, Purchase, Recipe, Tag, User
 from .permissions import IsOwnerOrAdminOrReadOnly
 from .serializers import (FollowerRecipeSerializer, FollowerSerializer,
                           IngredientSerializer, RecipeSerializer,
@@ -176,3 +176,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
 
         return self.delete_obj(Purchase, user, recipe)
+
+    @action(detail=False, permission_classes=[IsAuthenticated])
+    def download_shopping_cart(self, request):
+        user = request.user
+        shopping_cart = user.purchases.all()
+        buying_list = {}
+        for record in shopping_cart:
+            recipe = record.recipe
+            ingredients = IngredientInRecipe.objects.filter(recipe=recipe)
+            for ingredient in ingredients:
+                amount = ingredient.amount
+                name = ingredient.ingredient.name
+                measurement_unit = ingredient.ingredient.measurement_unit
+                if name not in buying_list:
+                    buying_list[name] = {
+                        'measurement_unit': measurement_unit,
+                        'amount': amount
+                    }
+                else:
+                    buying_list[name]['amount'] = (buying_list[name]['amount']
+                                                   + amount)
+
+        wishlist = []
+        for item in buying_list:
+            wishlist.append(f'{item} - {buying_list[item]["amount"]} '
+                            f'{buying_list[item]["measurement_unit"]} \n')
+        wishlist.append('\n')
+        wishlist.append('FoodGram, 2021')
+        response = HttpResponse(wishlist, 'Content-Type: text/plain')
+        response['Content-Disposition'] = 'attachment; filename="wishlist.txt"'
+
+        return response
