@@ -3,8 +3,8 @@ from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from .models import (Favorites, Follow, Ingredient, IngredientInRecipe,
-                     Purchase, Recipe, Tag, User)
+from .models import (Follow, Ingredient, IngredientInRecipe,
+                     Recipe, Tag, User)
 
 
 class UserSerializer(UserSerializer):
@@ -59,21 +59,21 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'author', 'name', 'text', 'image',
-                  'ingredients', 'tags', 'cooking_time',
+        fields = ('id', 'tags', 'author', 'name', 'text',
+                  'image', 'ingredients', 'cooking_time',
                   'is_favorited', 'is_in_shopping_cart')
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Favorites.objects.filter(user=request.user, author=obj).exists()
+        return obj.is_favorited
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Purchase.objects.filter(user=request.user, author=obj).exists()
+        return obj.is_in_shopping_cart
 
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
