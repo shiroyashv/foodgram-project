@@ -30,10 +30,10 @@ class CustomUserViewSet(UserViewSet):
 
         if (Follow.objects.filter(user=user, author=author)
                 .exists() or user == author):
-            return Response({
-                'errors': ('Вы уже подписаны на этого пользователя '
-                           'или подписываетесь на самого себя')
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                ('Вы уже подписаны на этого пользователя '
+                 'или подписываетесь на самого себя'),
+                status=status.HTTP_400_BAD_REQUEST)
 
         subscribe = Follow.objects.create(user=user, author=author)
         subscribe.save()
@@ -54,9 +54,9 @@ class CustomUserViewSet(UserViewSet):
             subscribe.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response({
-            'errors': 'Вы уже отписались'
-        }, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            'Вы уже отписались', status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
