@@ -3,8 +3,7 @@ from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from .models import (Follow, Ingredient, IngredientInRecipe,
-                     Recipe, Tag, User)
+from .models import Follow, Ingredient, IngredientInRecipe, Recipe, Tag, User
 
 
 class UserSerializer(UserSerializer):
@@ -77,11 +76,17 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
+        ingredients_set = set()
         for ingredient in ingredients:
-            if int(ingredient.get('amount')) < 0:
+            ingredients_set.add(ingredient.get('id'))
+            if int(ingredient.get('amount')) <= 0:
                 raise serializers.ValidationError({
                     'ingredients': ('Убедитесь, что значение количества '
                                     'ингредиента больше 0')
+                })
+            if ingredient.get('id') in ingredients_set:
+                raise serializers.ValidationError({
+                    'ingredients': 'Такой ингредиент уже добавлен'
                 })
         data['ingredients'] = ingredients
 

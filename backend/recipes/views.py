@@ -9,7 +9,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import IngredientNameFilter, RecipeFilter
-from .models import Favorites, Follow, Ingredient, IngredientInRecipe, Purchase, Recipe, Tag, User
+from .models import (Favorites, Follow, Ingredient, IngredientInRecipe,
+                     Purchase, Recipe, Tag, User)
 from .permissions import IsOwnerOrAdminOrReadOnly
 from .serializers import (FollowerRecipeSerializer, FollowerSerializer,
                           IngredientSerializer, RecipeSerializer,
@@ -124,7 +125,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    def add_obj(self, model, user, recipe):
+    def add_object(self, model, user, recipe):
         if model.objects.filter(user=user, recipe=recipe).exists():
             return Response(
                 'Рецепт уже добавлен в список',
@@ -139,7 +140,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete_obj(self, model, user, recipe):
+    def delete_object(self, model, user, recipe):
         obj = model.objects.filter(user=user, recipe=recipe)
         if obj.exists():
             obj.delete()
@@ -154,57 +155,55 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
         user = request.user
 
-        return self.add_obj(Favorites, user, recipe)
+        return self.add_object(Favorites, user, recipe)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk=None):
         user = request.user
         recipe = self.get_object()
 
-        return self.delete_obj(Favorites, user, recipe)
+        return self.delete_object(Favorites, user, recipe)
 
     @action(detail=True, permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         user = request.user
         recipe = self.get_object()
 
-        return self.add_obj(Purchase, user, recipe)
+        return self.add_object(Purchase, user, recipe)
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk=None):
         user = request.user
         recipe = self.get_object()
 
-        return self.delete_obj(Purchase, user, recipe)
+        return self.delete_object(Purchase, user, recipe)
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
         user = request.user
         shopping_cart = user.purchases.all()
-        buying_list = {}
-        for record in shopping_cart:
-            recipe = record.recipe
+        list = {}
+        for item in shopping_cart:
+            recipe = item.recipe
             ingredients = IngredientInRecipe.objects.filter(recipe=recipe)
             for ingredient in ingredients:
                 amount = ingredient.amount
                 name = ingredient.ingredient.name
                 measurement_unit = ingredient.ingredient.measurement_unit
-                if name not in buying_list:
-                    buying_list[name] = {
+                if name not in list:
+                    list[name] = {
                         'measurement_unit': measurement_unit,
                         'amount': amount
                     }
                 else:
-                    buying_list[name]['amount'] = (buying_list[name]['amount']
-                                                   + amount)
+                    list[name]['amount'] = (list[name]['amount']
+                                            + amount)
 
-        wishlist = []
-        for item in buying_list:
-            wishlist.append(f'{item} - {buying_list[item]["amount"]} '
-                            f'{buying_list[item]["measurement_unit"]} \n')
-        wishlist.append('\n')
-        wishlist.append('FoodGram, 2021')
-        response = HttpResponse(wishlist, 'Content-Type: text/plain')
-        response['Content-Disposition'] = 'attachment; filename="wishlist.txt"'
+        shopping_list = []
+        for item in list:
+            shopping_list.append(f'{item} - {list[item]["amount"]} '
+                                 f'{list[item]["measurement_unit"]} \n')
+        response = HttpResponse(shopping_list, 'Content-Type: text/plain')
+        response['Content-Disposition'] = 'attachment; filename="shopping.txt"'
 
         return response
