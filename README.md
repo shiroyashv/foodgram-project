@@ -20,13 +20,10 @@ cd backend/
 ```
 docker-compose up -d
 ``` 
-- Создайте миграции:
+- Выполните миграции:
 ```
 docker-compose exec web python manage.py makemigrations users --noinput
 docker-compose exec web python manage.py makemigrations recipes --noinput
-``` 
-- Выполните миграции:
-```
 docker-compose exec web python manage.py migrate --noinput
 ``` 
 - Команда для сбора статики:
