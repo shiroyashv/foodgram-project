@@ -20,7 +20,7 @@ from .serializers import (FollowerRecipeSerializer, FollowerSerializer,
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     pagination_class = PageNumberPagination
-    permission_classes = [IsOwnerOrAdminOrReadOnly]
+    permission_classes = (IsOwnerOrAdminOrReadOnly,)
     serializer_class = UserSerializer
 
     @action(detail=True, permission_classes=[IsAuthenticated])
