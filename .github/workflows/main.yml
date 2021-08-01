@@ -79,7 +79,7 @@ jobs:
             sudo docker-compose exec -T web python manage.py makemigrations users
             sudo docker-compose exec -T web python manage.py makemigrations recipes
             sudo docker-compose exec -T web python manage.py migrate --noinput 
-            sudo docker-compose exec backend python manage.py collectstatic --no-input
+            sudo docker-compose exec -T web python manage.py collectstatic --no-input
   
   send_message:
     runs-on: ubuntu-latest
