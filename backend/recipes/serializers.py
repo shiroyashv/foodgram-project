@@ -1,15 +1,14 @@
 from django.shortcuts import get_object_or_404
-from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from .models import Follow, Ingredient, IngredientInRecipe, Recipe, Tag, User
 
 
-class UserSerializer(UserSerializer):
+class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
-    class Meta(UserSerializer.Meta):
+    class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed')
