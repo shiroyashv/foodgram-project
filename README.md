@@ -38,6 +38,13 @@ docker-compose exec web python manage.py migrate --noinput
 docker-compose exec web python manage.py createsuperuser
 ``` 
 
+### Проект доступен по адрессу:
+84.201.155.11
+
+### Администратор
+- username: admin
+- password: admin
+
 ### Автор
 Сергей. Студент Яндекс.Практикум 
 
