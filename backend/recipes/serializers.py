@@ -80,14 +80,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             ingredients_set.add(ingredient.get('id'))
             if int(ingredient.get('amount')) <= 0:
-                raise serializers.ValidationError({
-                    'ingredients': ('Убедитесь, что значение количества '
-                                    'ингредиента больше 0')
-                })
+                raise serializers.ValidationError(
+                    ('Убедитесь, что значение количества '
+                     'ингредиента больше 0')
+                )
             if ingredient.get('id') in ingredients_set:
-                raise serializers.ValidationError({
-                    'ingredients': 'Такой ингредиент уже добавлен'
-                })
+                raise serializers.ValidationError(
+                    'Такой ингредиент уже добавлен'
+                )
         data['ingredients'] = ingredients
 
         return data
