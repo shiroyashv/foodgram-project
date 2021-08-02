@@ -134,36 +134,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
 
-class FollowSerializer(serializers.ModelSerializer):
-    queryset = User.objects.all()
-    user = serializers.PrimaryKeyRelatedField(queryset=queryset)
-    author = serializers.PrimaryKeyRelatedField(queryset=queryset)
-
-    class Meta:
-        model = Follow
-        fields = ('user', 'author')
-
-    def validate(self, data):
-        request = self.context.get('request')
-        author_id = data['author'].id
-        follow_exists = Follow.objects.filter(
-            user=request.user,
-            author__id=author_id
-        ).exists()
-
-        if request.method == 'GET':
-            if request.user.id == author_id:
-                raise serializers.ValidationError(
-                    'Нельзя подписаться на себя'
-                )
-            if follow_exists:
-                raise serializers.ValidationError(
-                    'Вы уже подписаны на этого пользователя'
-                )
-
-        return data
-
-
 class FollowerRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
@@ -205,6 +175,43 @@ class FollowerSerializer(serializers.ModelSerializer):
         return Recipe.objects.filter(author=obj.author).count()
 
 
+class FollowSerializer(serializers.ModelSerializer):
+    queryset = User.objects.all()
+    user = serializers.PrimaryKeyRelatedField(queryset=queryset)
+    author = serializers.PrimaryKeyRelatedField(queryset=queryset)
+
+    class Meta:
+        model = Follow
+        fields = ('user', 'author')
+
+    def validate(self, data):
+        request = self.context.get('request')
+        author_id = data['author'].id
+        follow_exists = Follow.objects.filter(
+            user=request.user,
+            author__id=author_id
+        ).exists()
+
+        if request.method == 'GET':
+            if request.user.id == author_id:
+                raise serializers.ValidationError(
+                    'Нельзя подписаться на себя'
+                )
+            if follow_exists:
+                raise serializers.ValidationError(
+                    'Вы уже подписаны на этого пользователя'
+                )
+
+        return data
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return FollowerSerializer(
+            instance.author,
+            context=context).data
+
+
 class FavoritesSerializer(serializers.ModelSerializer):
     recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
@@ -228,6 +235,13 @@ class FavoritesSerializer(serializers.ModelSerializer):
 
         return data
 
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return FollowerRecipeSerializer(
+            instance.recipe,
+            context=context).data
+
 
 class PurchaseSerializer(FavoritesSerializer):
     class Meta(FavoritesSerializer.Meta):
@@ -247,3 +261,10 @@ class PurchaseSerializer(FavoritesSerializer):
             )
 
         return data
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return FollowerRecipeSerializer(
+            instance.recipe,
+            context=context).data
