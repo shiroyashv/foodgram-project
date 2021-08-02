@@ -164,16 +164,16 @@ class FollowerSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
-        queryset = Recipe.objects.filter(author=obj)
+        queryset = Recipe.objects.filter(author=obj.id)
         if limit is not None:
             queryset = Recipe.objects.filter(
-                author=obj.author
+                author=obj.id
             )[:int(limit)]
 
         return FollowerRecipeSerializer(queryset, many=True).data
 
     def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj).count()
+        return Recipe.objects.filter(author=obj.id).count()
 
 
 class FollowSerializer(serializers.ModelSerializer):
