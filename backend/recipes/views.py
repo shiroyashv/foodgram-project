@@ -29,8 +29,8 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(User, id=id)
 
         data = {
-            'user': user,
-            'author': author,
+            'user': user.id,
+            'author': author.id,
         }
         serializer = FollowerSerializer(
             data=data, context={'request': request}
@@ -47,8 +47,8 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(User, id=id)
 
         data = {
-            'user': user,
-            'author': author,
+            'user': user.id,
+            'author': author.id,
         }
         serializer = FollowerSerializer(
             data=data, context={'request': request}

@@ -160,7 +160,7 @@ class FollowerSerializer(serializers.ModelSerializer):
         author = data['author']
         follow_exist = Follow.objects.filter(
             user=request.user,
-            author=author
+            author__id=author.id
         ).exists()
 
         if request.method == 'GET':
