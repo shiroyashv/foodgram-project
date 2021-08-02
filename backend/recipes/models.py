@@ -99,12 +99,12 @@ class IngredientInRecipe(models.Model):
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиент',
-        related_name='ingredients_amount',
+        related_name='ingredients_amounts',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredients_amount',
+        related_name='ingredients_amounts',
     )
     amount = models.PositiveIntegerField(
         verbose_name='Количество ингредиента',
@@ -124,12 +124,12 @@ class Favorites(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="favorite_subscriber",
+        related_name='favorite_subscriber',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name="favorite_recipe",
+        related_name='favorite_recipe',
     )
     date_added = models.DateTimeField(
         auto_now_add=True,

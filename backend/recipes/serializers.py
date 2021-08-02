@@ -2,7 +2,8 @@ from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from .models import Follow, Ingredient, IngredientInRecipe, Recipe, Tag, User
+from .models import (Favorites, Follow, Ingredient, IngredientInRecipe,
+                     Purchase, Recipe, Tag, User)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -65,13 +66,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return obj.is_favorited
+        return Favorites.objects.filter(user=request.user,
+                                        author=obj.id).exists()
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return obj.is_in_shopping_cart
+        return Purchase.objects.filter(user=request.user,
+                                       author=obj.id).exists()
 
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
@@ -100,15 +103,13 @@ class RecipeSerializer(serializers.ModelSerializer):
                 ingredient_id=ingredient.get('id'),
                 amount=ingredient.get('amount')
             )
-        recipe.is_favorited = False
-        recipe.is_in_shopping_cart = False
 
         return recipe
 
     def update(self, instance, validated_data):
         ingredients = validated_data.get('ingredients')
         instance.tags.clear()
-        IngredientInRecipe.objects.filter(recipe=instance).all().delete()
+        IngredientInRecipe.objects.filter(recipe=instance).delete()
         tags = self.initial_data.get('tags')
 
         for tag_id in tags:
@@ -128,8 +129,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.cooking_time = validated_data.get(
             'cooking_time', instance.cooking_time
         )
-        instance.is_favorited = instance.is_favorited
-        instance.is_in_shopping_cart = instance.is_in_shopping_cart
         instance.save()
 
         return instance
@@ -155,6 +154,31 @@ class FollowerSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count')
+
+    def validate(self, data):
+        request = self.context.get('request')
+        author = data['author']
+        follow_exist = Follow.objects.filter(
+            user=request.user,
+            author=author
+        ).exists()
+
+        if request.method == 'GET':
+            if request.user == author:
+                raise serializers.ValidationError(
+                    'Нельзя подписаться на себя'
+                )
+            elif follow_exist:
+                raise serializers.ValidationError(
+                    'Вы уже подписаны'
+                )
+        elif request.method == 'DELETE':
+            if not follow_exist:
+                raise serializers.ValidationError(
+                    'Вы уже отписались'
+                )
+
+        return data
 
     def get_is_subscribed(self, obj):
         return Follow.objects.filter(

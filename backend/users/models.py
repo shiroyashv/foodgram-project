@@ -54,7 +54,7 @@ class CustomUser(AbstractUser):
         return self.username
 
     def get_full_name(self):
-        return f"{self.first_name}  {self.last_name}"
+        return f'{self.first_name}  {self.last_name}'
 
     def has_perm(self, perm, obj=None):
         return True

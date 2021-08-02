@@ -28,18 +28,14 @@ class CustomUserViewSet(UserViewSet):
         user = request.user
         author = get_object_or_404(User, id=id)
 
-        if (Follow.objects.filter(user=user, author=author)
-                .exists() or user == author):
-            return Response(
-                ('Вы уже подписаны на этого пользователя '
-                 'или подписываетесь на самого себя'),
-                status=status.HTTP_400_BAD_REQUEST)
-
+        data = {
+            'user': user,
+            'author': author,
+        }
+        serializer = FollowerSerializer(data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
         subscribe = Follow.objects.create(user=user, author=author)
         subscribe.save()
-        serializer = FollowerSerializer(
-            subscribe, context={'request': request}
-        )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -47,16 +43,19 @@ class CustomUserViewSet(UserViewSet):
     def delete_subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
+
+        data = {
+            'user': user,
+            'author': author,
+        }
+        serializer = FollowerSerializer(data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
         subscribe = Follow.objects.filter(
             user=user, author=author
         )
-        if subscribe.exists():
-            subscribe.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        subscribe.delete()
 
-        return Response(
-            'Вы уже отписались', status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
