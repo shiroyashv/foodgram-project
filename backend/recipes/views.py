@@ -30,7 +30,7 @@ class CustomUserViewSet(UserViewSet):
 
         data = {
             'user': user.id,
-            'author': author.id,
+            'id': author.id,
         }
         serializer = FollowerSerializer(
             data=data, context={'request': request}
@@ -48,7 +48,7 @@ class CustomUserViewSet(UserViewSet):
 
         data = {
             'user': user.id,
-            'author': author.id,
+            'id': author.id,
         }
         serializer = FollowerSerializer(
             data=data, context={'request': request}

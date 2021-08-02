@@ -157,7 +157,7 @@ class FollowerSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context.get('request')
-        author_id = data['author'].id
+        author_id = data['id']
         follow_exist = Follow.objects.filter(
             user=request.user,
             author__id=author_id
