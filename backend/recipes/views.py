@@ -12,10 +12,10 @@ from .filters import IngredientNameFilter, RecipeFilter
 from .models import (Favorites, Follow, Ingredient, IngredientInRecipe,
                      Purchase, Recipe, Tag, User)
 from .permissions import IsOwnerOrAdminOrReadOnly
-from .serializers import (FavoritesSerializer, FollowerSerializer,
-                          FollowSerializer, IngredientSerializer,
-                          PurchaseSerializer, RecipeSerializer, TagSerializer,
-                          UserSerializer)
+from .serializers import (FavoritesSerializer, FollowerRecipeSerializer,
+                          FollowerSerializer, FollowSerializer,
+                          IngredientSerializer, PurchaseSerializer,
+                          RecipeSerializer, TagSerializer, UserSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -134,6 +134,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        serializer = FollowerRecipeSerializer(recipe)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -163,6 +164,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        serializer = FollowerRecipeSerializer(recipe)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
