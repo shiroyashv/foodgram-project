@@ -12,9 +12,10 @@ from .filters import IngredientNameFilter, RecipeFilter
 from .models import (Favorites, Follow, Ingredient, IngredientInRecipe,
                      Purchase, Recipe, Tag, User)
 from .permissions import IsOwnerOrAdminOrReadOnly
-from .serializers import (FollowSerializer, FollowerRecipeSerializer, FollowerSerializer,
-                          IngredientSerializer, RecipeSerializer,
-                          TagSerializer, UserSerializer)
+from .serializers import (FavoritesSerializer, FollowerSerializer,
+                          FollowSerializer, IngredientSerializer,
+                          PurchaseSerializer, RecipeSerializer, TagSerializer,
+                          UserSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -29,8 +30,8 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(User, id=id)
 
         data = {
-            'user': user,
-            'author': author,
+            'user': user.id,
+            'author': author.id,
         }
         serializer = FollowSerializer(
             data=data, context={'request': request}
@@ -118,58 +119,63 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    def add_object(self, model, user, recipe):
-        if model.objects.filter(user=user, recipe=recipe).exists():
-            return Response(
-                'Рецепт уже добавлен в список',
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        obj = model.objects.create(
-            user=user, recipe=recipe
-        )
-        obj.save()
-        serializer = FollowerRecipeSerializer(recipe)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def delete_object(self, model, user, recipe):
-        obj = model.objects.filter(user=user, recipe=recipe)
-        if obj.exists():
-            obj.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response(
-            'Рецепт уже удален', status=status.HTTP_400_BAD_REQUEST
-        )
-
     @action(detail=True, permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
-        recipe = self.get_object()
         user = request.user
+        recipe = get_object_or_404(Recipe, id=pk)
 
-        return self.add_object(Favorites, user, recipe)
+        data = {
+            'user': user.id,
+            'recipe': recipe.id,
+        }
+        serializer = FavoritesSerializer(
+            data=data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk=None):
         user = request.user
-        recipe = self.get_object()
+        recipe = get_object_or_404(Recipe, id=pk)
+        favorites = get_object_or_404(
+            Favorites, user=user, recipe=recipe
+        )
+        favorites.delete()
 
-        return self.delete_object(Favorites, user, recipe)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         user = request.user
-        recipe = self.get_object()
+        recipe = get_object_or_404(Recipe, id=pk)
 
-        return self.add_object(Purchase, user, recipe)
+        data = {
+            'user': user.id,
+            'recipe': recipe.id,
+        }
+        serializer = PurchaseSerializer(
+            data=data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk=None):
         user = request.user
-        recipe = self.get_object()
+        recipe = get_object_or_404(Recipe, id=pk)
+        favorites = get_object_or_404(
+            Purchase, user=user, recipe=recipe
+        )
+        favorites.delete()
 
-        return self.delete_object(Purchase, user, recipe)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):

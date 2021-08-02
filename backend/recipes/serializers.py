@@ -146,7 +146,7 @@ class FollowSerializer(serializers.ModelSerializer):
     def validate(self, data):
         request = self.context.get('request')
         author_id = data['author'].id
-        follow_exist = Follow.objects.filter(
+        follow_exists = Follow.objects.filter(
             user=request.user,
             author__id=author_id
         ).exists()
@@ -156,7 +156,7 @@ class FollowSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Нельзя подписаться на себя'
                 )
-            if follow_exist:
+            if follow_exists:
                 raise serializers.ValidationError(
                     'Вы уже подписаны на этого пользователя'
                 )
@@ -203,3 +203,47 @@ class FollowerSerializer(serializers.ModelSerializer):
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
+
+
+class FavoritesSerializer(serializers.ModelSerializer):
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
+    class Meta:
+        model = Favorites
+        fields = ('user', 'recipe')
+
+    def validate(self, data):
+        request = self.context.get('request')
+        recipe_id = data['recipe'].id
+        favorite_exists = Favorites.objects.filter(
+            user=request.user,
+            recipe__id=recipe_id
+        ).exists()
+
+        if request.method == 'GET' and favorite_exists:
+            raise serializers.ValidationError(
+                'Рецепт уже добавлен в избранное'
+            )
+
+        return data
+
+
+class PurchaseSerializer(FavoritesSerializer):
+    class Meta(FavoritesSerializer.Meta):
+        model = Purchase
+
+    def validate(self, data):
+        request = self.context.get('request')
+        recipe_id = data['recipe'].id
+        purchase_exists = Purchase.objects.filter(
+            user=request.user,
+            recipe__id=recipe_id
+        ).exists()
+
+        if request.method == 'GET' and purchase_exists:
+            raise serializers.ValidationError(
+                'Рецепт уже в списке покупок'
+            )
+
+        return data
