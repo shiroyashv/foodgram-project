@@ -134,6 +134,36 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
 
+class FollowSerializer(serializers.ModelSerializer):
+    queryset = User.objects.all()
+    user = serializers.PrimaryKeyRelatedField(queryset=queryset)
+    author = serializers.PrimaryKeyRelatedField(queryset=queryset)
+
+    class Meta:
+        model = Follow
+        fields = ('user', 'author')
+
+    def validate(self, data):
+        request = self.context.get('request')
+        author_id = data['author'].id
+        follow_exist = Follow.objects.filter(
+            user=request.user,
+            author__id=author_id
+        ).exists()
+
+        if request.method == 'GET':
+            if request.user.id == author_id:
+                raise serializers.ValidationError(
+                    'Нельзя подписаться на себя'
+                )
+            if follow_exist:
+                raise serializers.ValidationError(
+                    'Вы уже подписаны на этого пользователя'
+                )
+
+        return data
+
+
 class FollowerRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
@@ -154,31 +184,6 @@ class FollowerSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count')
-
-    def validate(self, data):
-        request = self.context.get('request')
-        author_id = data['id'].id
-        follow_exist = Follow.objects.filter(
-            user=request.user,
-            author__id=author_id
-        ).exists()
-
-        if request.method == 'GET':
-            if request.user.id == author_id:
-                raise serializers.ValidationError(
-                    'Нельзя подписаться на себя'
-                )
-            elif follow_exist:
-                raise serializers.ValidationError(
-                    'Вы уже подписаны'
-                )
-        elif request.method == 'DELETE':
-            if not follow_exist:
-                raise serializers.ValidationError(
-                    'Вы уже отписались'
-                )
-
-        return data
 
     def get_is_subscribed(self, obj):
         return Follow.objects.filter(

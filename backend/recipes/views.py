@@ -12,7 +12,7 @@ from .filters import IngredientNameFilter, RecipeFilter
 from .models import (Favorites, Follow, Ingredient, IngredientInRecipe,
                      Purchase, Recipe, Tag, User)
 from .permissions import IsOwnerOrAdminOrReadOnly
-from .serializers import (FollowerRecipeSerializer, FollowerSerializer,
+from .serializers import (FollowSerializer, FollowerRecipeSerializer, FollowerSerializer,
                           IngredientSerializer, RecipeSerializer,
                           TagSerializer, UserSerializer)
 
@@ -29,15 +29,14 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(User, id=id)
 
         data = {
-            'user': user.id,
-            'id': author.id,
+            'user': user,
+            'author': author,
         }
-        serializer = FollowerSerializer(
+        serializer = FollowSerializer(
             data=data, context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        subscribe = Follow.objects.create(user=user, author=author)
-        subscribe.save()
+        serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -45,18 +44,10 @@ class CustomUserViewSet(UserViewSet):
     def delete_subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
-
-        data = {
-            'user': user.id,
-            'id': author.id,
-        }
-        serializer = FollowerSerializer(
-            data=data, context={'request': request}
+        subscribe = get_object_or_404(
+            Follow, user=user, author=author
         )
-        serializer.is_valid(raise_exception=True)
-        Follow.objects.filter(
-            user=user, author=author
-        ).delete()
+        subscribe.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
