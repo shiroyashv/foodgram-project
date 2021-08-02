@@ -32,7 +32,9 @@ class CustomUserViewSet(UserViewSet):
             'user': user,
             'author': author,
         }
-        serializer = FollowerSerializer(data, context={'request': request})
+        serializer = FollowerSerializer(
+            data=data, context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         subscribe = Follow.objects.create(user=user, author=author)
         subscribe.save()
@@ -48,12 +50,13 @@ class CustomUserViewSet(UserViewSet):
             'user': user,
             'author': author,
         }
-        serializer = FollowerSerializer(data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        subscribe = Follow.objects.filter(
-            user=user, author=author
+        serializer = FollowerSerializer(
+            data=data, context={'request': request}
         )
-        subscribe.delete()
+        serializer.is_valid(raise_exception=True)
+        Follow.objects.filter(
+            user=user, author=author
+        ).delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
