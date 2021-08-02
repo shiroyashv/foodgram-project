@@ -157,14 +157,14 @@ class FollowerSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context.get('request')
-        author = data['author']
+        author_id = data['author'].id
         follow_exist = Follow.objects.filter(
             user=request.user,
-            author__id=author.id
+            author__id=author_id
         ).exists()
 
         if request.method == 'GET':
-            if request.user == author:
+            if request.user.id == author_id:
                 raise serializers.ValidationError(
                     'Нельзя подписаться на себя'
                 )
