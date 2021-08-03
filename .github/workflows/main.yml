@@ -77,8 +77,6 @@ jobs:
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             echo DOMAIN_NAME=${{ secrets.DOMAIN_NAME }} >> .env
             sudo docker-compose up -d
-            sudo docker-compose exec -T web python manage.py makemigrations users
-            sudo docker-compose exec -T web python manage.py makemigrations recipes
             sudo docker-compose exec -T web python manage.py migrate --noinput 
             sudo docker-compose exec -T web python manage.py collectstatic --no-input
   
