@@ -118,7 +118,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             IngredientInRecipe.objects.create(
                 recipe=instance,
-                ingredient_id=ingredient.get('id'),
+                ingredient=Ingredient.objects.get(id=ingredient.get('id')),
                 amount=ingredient.get('amount')
             )
 
