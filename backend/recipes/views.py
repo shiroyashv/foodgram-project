@@ -87,13 +87,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     filter_class = RecipeFilter
 
-    def get_permissions(self):
-        if self.action == 'create':
-            return IsAuthenticated(),
-        if self.action in ['destroy', 'update', 'partial_update']:
-            return IsOwnerOrAdminOrReadOnly(),
-        return AllowAny(),
-
     def perform_create(self, serializer):
         return serializer.save(author=self.request.user)
 

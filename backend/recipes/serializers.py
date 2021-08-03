@@ -107,21 +107,20 @@ class RecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        ingredients = validated_data.get('ingredients')
         instance.tags.clear()
-        IngredientInRecipe.objects.filter(recipe=instance).delete()
         tags = self.initial_data.get('tags')
 
         for tag_id in tags:
             instance.tags.add(get_object_or_404(Tag, pk=tag_id))
 
+        ingredients = validated_data.get('ingredients')
+        IngredientInRecipe.objects.filter(recipe=instance).delete()
         for ingredient in ingredients:
-            ingredient_amount = IngredientInRecipe.objects.create(
+            IngredientInRecipe.objects.create(
                 recipe=instance,
                 ingredient_id=ingredient.get('id'),
                 amount=ingredient.get('amount')
             )
-            ingredient_amount.save()
 
         if validated_data.get('image') is not None:
             instance.image = validated_data.get('image')
