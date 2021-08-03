@@ -36,10 +36,22 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(max_length=254, unique=True)
-    username = models.CharField(max_length=150, unique=True)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
+    email = models.EmailField(
+        max_length=254, unique=True,
+        verbose_name='email'
+    )
+    username = models.CharField(
+        max_length=150, unique=True,
+        verbose_name='Никнейм'
+    )
+    first_name = models.CharField(
+        max_length=150,
+        verbose_name='Имя'
+    )
+    last_name = models.CharField(
+        max_length=150,
+        verbose_name='Фамилия'
+    )
 
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
@@ -49,6 +61,10 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
 
     objects = CustomUserManager()
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
     def __str__(self):
         return self.username
