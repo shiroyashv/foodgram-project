@@ -118,14 +118,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             IngredientInRecipe.objects.create(
                 recipe=instance,
-                ingredient=Ingredient.objects.get(id=ingredient.get('id')),
+                ingredient=ingredient.get('id'),
                 amount=ingredient.get('amount')
             )
 
-        if validated_data.get('image') is not None:
-            instance.image = validated_data.get('image')
         instance.name = validated_data.get('name')
         instance.text = validated_data.get('text')
+        if validated_data.get('image') is not None:
+            instance.image = validated_data.get('image')
         instance.cooking_time = validated_data.get('cooking_time')
         instance.save()
 
