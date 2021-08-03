@@ -207,13 +207,6 @@ class FollowSerializer(serializers.ModelSerializer):
 
         return data
 
-    def to_representation(self, instance):
-        request = self.context.get('request')
-        context = {'request': request}
-        return FollowerSerializer(
-            instance.author,
-            context=context).data
-
 
 class FavoritesSerializer(serializers.ModelSerializer):
     recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
