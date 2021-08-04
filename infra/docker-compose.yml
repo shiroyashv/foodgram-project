@@ -30,7 +30,7 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./templates/default.conf.template:/etc/nginx/conf.d/default.conf
       - static_value:/static/
       - media_value:/media/
       - result_build:/usr/share/nginx/html/
@@ -38,6 +38,8 @@ services:
     depends_on: 
       - web
       - frontend
+    env_file:
+      - ./.env
 
 volumes:
   static_value:  
