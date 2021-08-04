@@ -115,11 +115,12 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         IngredientInRecipe.objects.filter(recipe=instance).delete()
         for ingredient in validated_data.get('ingredients'):
-            IngredientInRecipe.objects.create(
+            ingredients_amounts = IngredientInRecipe.objects.create(
                 recipe=instance,
-                ingredient=ingredient.get('id'),
+                ingredient_id=ingredient.get('id'),
                 amount=ingredient.get('amount')
             )
+            ingredients_amounts.save()
 
         if validated_data.get('image') is not None:
             instance.image = validated_data.get('image')
