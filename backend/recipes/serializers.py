@@ -50,7 +50,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     ingredients = IngredientInRecipeSerializer(
-        source='ingredients_amount',
+        source='ingredients_amounts',
         many=True, read_only=True,
     )
     is_favorited = serializers.SerializerMethodField()
@@ -121,10 +121,10 @@ class RecipeSerializer(serializers.ModelSerializer):
                 amount=ingredient.get('amount')
             )
 
-        instance.name = validated_data.get('name')
-        instance.text = validated_data.get('text')
         if validated_data.get('image') is not None:
             instance.image = validated_data.get('image')
+        instance.name = validated_data.get('name')
+        instance.text = validated_data.get('text')
         instance.cooking_time = validated_data.get('cooking_time')
         instance.save()
 
