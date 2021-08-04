@@ -84,6 +84,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                     ('Убедитесь, что значение количества '
                      'ингредиента больше 0')
                 )
+        data['ingredients'] = ingredients
 
         return data
 
