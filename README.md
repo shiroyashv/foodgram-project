@@ -11,10 +11,15 @@
 - nginx
 - gunicorn
 
-### Запуск проекта
-- Перейдите в папку backend:
+### Запуск проекта на сервере
+## Для работы сервиса на сервере должны быть установлены [Docker](https://www.docker.com) и [docker-compose](https://docs.docker.com/compose/install/)
+- Клонируйте репозиторий командой:
 ```
-cd backend/
+git clone https://github.com/TheXtreme30/foodgram-project-react.git
+``` 
+- Перейдите в каталог командой:
+```
+cd foodgram-project-react/backend/
 ``` 
 - Выполните команду для запуска контейнера:
 ```
@@ -34,13 +39,11 @@ docker-compose exec web python manage.py createsuperuser
 ``` 
 
 ### Проект доступен по адрессу:
-84.201.155.11
+[Foodgram](http://84.201.155.11/)
 
 ### Администратор
-- username: admin
+- email: admin@gmail.com
 - password: admin
 
 ### Автор
 Сергей. Студент Яндекс.Практикум 
-
-
