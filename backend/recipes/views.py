@@ -4,13 +4,13 @@ from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import IngredientNameFilter, RecipeFilter
 from .models import (Favorites, Follow, Ingredient, IngredientInRecipe,
                      Purchase, Recipe, Tag, User)
+from .pagination import CustomPagination
 from .permissions import IsOwnerOrAdminOrReadOnly
 from .serializers import (FavoritesSerializer, FollowerSerializer,
                           FollowSerializer, IngredientSerializer,
@@ -20,7 +20,7 @@ from .serializers import (FavoritesSerializer, FollowerSerializer,
 
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
     permission_classes = (IsOwnerOrAdminOrReadOnly,)
     serializer_class = UserSerializer
 
@@ -84,7 +84,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsOwnerOrAdminOrReadOnly,)
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
     filter_class = RecipeFilter
 
     def perform_create(self, serializer):
