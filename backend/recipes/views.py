@@ -141,8 +141,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, permission_classes=[IsAuthenticated],
-            pagination_class=None)
+    @action(detail=True, permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         user = request.user
         recipe = get_object_or_404(Recipe, id=pk)
