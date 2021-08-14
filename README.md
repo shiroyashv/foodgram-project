@@ -3,6 +3,9 @@
 
 Проект Foodgram позволяет пользователям публиковать рецепты, добавлять рецепты в избранное и список покупок, подписыватся на других пользователей и скачивать список продуктов.
 
+### Проект доступен по адрессу:
+[Foodgram](http://84.201.155.11/)
+
 ### Технологии
 - Python
 - Django
@@ -37,13 +40,6 @@ docker-compose exec web python manage.py migrate --noinput
 ```
 docker-compose exec web python manage.py createsuperuser
 ``` 
-
-### Проект доступен по адрессу:
-[Foodgram](http://84.201.155.11/)
-
-### Администратор
-- email: admin@gmail.com
-- password: admin
 
 ### Автор
 Сергей. Студент Яндекс.Практикум 
