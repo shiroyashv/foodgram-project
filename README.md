@@ -8,11 +8,10 @@
 
 ### Технологии
 - Python
-- Django
+- Django REST framework
 - Docker
-- postgresql
-- nginx
-- gunicorn
+- PostgreSQL
+
 
 ### Запуск проекта на сервере
 ## Для работы сервиса на сервере должны быть установлены [Docker](https://www.docker.com) и [docker-compose](https://docs.docker.com/compose/install/)
