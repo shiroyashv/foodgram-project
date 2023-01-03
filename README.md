@@ -39,6 +39,3 @@ docker-compose exec web python manage.py migrate --noinput
 ```
 docker-compose exec web python manage.py createsuperuser
 ``` 
-
-### Автор
-Сергей. Студент Яндекс.Практикум 
